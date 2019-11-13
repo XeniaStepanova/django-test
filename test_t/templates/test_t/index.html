@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Test Rooms</title>
+</head>
+<body>
+    What chat room would you like to enter?<br/>
+    <input id="url-input" type="text" size="100"/><br/>
+    <input id="url-submit" type="button" value="Send"/><br/>
+    <textarea id="test-log" cols="100" rows="20"></textarea><br/>
+    
+
+    <script>
+        document.querySelector('#url-input').focus();
+        document.querySelector('#url-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#url-submit').click();
+            }
+        };
+        console.log(window.location.host);
+		var socket = new WebSocket(
+                        'ws://' + window.location.host + '/');
+        socket.onopen = function(e) {
+			console.log('Socket is connected');
+		};
+		socket.onerror = function(e) {
+			console.log('error!');
+		};
+        socket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            console.log(data);
+			var message = data['message'];
+
+            document.querySelector('#test-log').value += (message + '\n');
+        };
+        socket.onclose = function(e) {
+			console.error('Socket closed unexpectedly');
+		};
+        document.querySelector('#url-submit').onclick = function(e) {
+            var Url = document.querySelector('#url-input').value;
+            console.log(Url);
+            console.log(window.location.host);
+            
+            socket.send(JSON.stringify({
+            'message': Url
+			}));
+            Url.value = '';
+        };
+    </script>
+</body>
+</html>
